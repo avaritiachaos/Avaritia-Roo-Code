@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, within } from "@/utils/test-utils"
+import { render, screen, fireEvent, waitFor } from "@/utils/test-utils"
 import { vscode } from "@/utils/vscode"
 
 import { ApiConfigSelector } from "../ApiConfigSelector"
@@ -66,9 +66,9 @@ describe("ApiConfigSelector", () => {
 		title: "API Config",
 		onChange: mockOnChange,
 		listApiConfigMeta: [
-			{ id: "config1", name: "Config 1", apiProvider: "anthropic", modelId: "claude-3-opus-20240229" },
-			{ id: "config2", name: "Config 2", apiProvider: "anthropic", modelId: "gpt-4" },
-			{ id: "config3", name: "Config 3", apiProvider: "anthropic", modelId: "claude-3-sonnet-20240229" },
+			{ id: "config1", name: "Config 1", modelId: "claude-3-opus-20240229" },
+			{ id: "config2", name: "Config 2", modelId: "gpt-4" },
+			{ id: "config3", name: "Config 3", modelId: "claude-3-sonnet-20240229" },
 		],
 		pinnedApiConfigs: { config1: true },
 		togglePinnedApiConfig: mockTogglePinnedApiConfig,
@@ -157,36 +157,6 @@ describe("ApiConfigSelector", () => {
 		expect(screen.getByText("prompts:apiConfiguration.select")).toBeInTheDocument()
 	})
 
-	test("renders providers and switches the model column by provider", () => {
-		const props = {
-			...defaultProps,
-			listApiConfigMeta: [
-				{ id: "anthropic", name: "Claude", apiProvider: "anthropic", modelId: "claude-3-opus" },
-				{ id: "openai", name: "OpenAI", apiProvider: "openai", modelId: "gpt-4" },
-				{ id: "deepseek", name: "DeepSeek", apiProvider: "deepseek", modelId: "deepseek-chat" },
-			],
-		}
-
-		render(<ApiConfigSelector {...props} />)
-
-		const trigger = screen.getByTestId("dropdown-trigger")
-		fireEvent.click(trigger)
-
-		const providerColumn = screen.getByTestId("api-provider-column")
-		const modelColumn = screen.getByTestId("api-model-column")
-
-		expect(within(providerColumn).getByText("Anthropic")).toBeInTheDocument()
-		expect(within(providerColumn).getByText("OpenAI Compatible")).toBeInTheDocument()
-		expect(within(providerColumn).getByText("DeepSeek")).toBeInTheDocument()
-		expect(within(modelColumn).getByText("claude-3-opus")).toBeInTheDocument()
-
-		fireEvent.click(within(providerColumn).getByText("OpenAI Compatible"))
-
-		expect(within(modelColumn).getByText("gpt-4")).toBeInTheDocument()
-		expect(within(modelColumn).getByText("OpenAI")).toBeInTheDocument()
-		expect(within(modelColumn).queryByText("deepseek-chat")).not.toBeInTheDocument()
-	})
-
 	test("filters configs based on search input", async () => {
 		const props = {
 			...defaultProps,
@@ -206,12 +176,14 @@ describe("ApiConfigSelector", () => {
 		fireEvent.click(trigger)
 
 		const searchInput = screen.getByPlaceholderText("common:ui.search_placeholder")
-		fireEvent.change(searchInput, { target: { value: "gpt-3.5-turbo" } })
+		fireEvent.change(searchInput, { target: { value: "Config 2" } })
 
 		// Wait for the filtering to take effect
 		await waitFor(() => {
-			expect(screen.getByText("Config 4")).toBeInTheDocument()
-			expect(screen.queryByText("Config 2")).not.toBeInTheDocument()
+			// Config 2 should be visible
+			expect(screen.getByText("Config 2")).toBeInTheDocument()
+			// Config 3 should not be visible (assuming exact match filtering)
+			expect(screen.queryByText("Config 3")).not.toBeInTheDocument()
 		})
 	})
 
@@ -322,9 +294,10 @@ describe("ApiConfigSelector", () => {
 		// Extract the config names from each row
 		const configNames: string[] = []
 		configRows.forEach((row) => {
-			const match = row.textContent?.match(/Config \d+/)
-			if (match) {
-				configNames.push(match[0])
+			// Find the first span that's flex-shrink-0 (the profile name)
+			const nameElement = row.querySelector(".flex-1 span.flex-shrink-0")
+			if (nameElement?.textContent) {
+				configNames.push(nameElement.textContent)
 			}
 		})
 
@@ -465,12 +438,11 @@ describe("ApiConfigSelector", () => {
 		expect(searchInput.value).toBe("Config")
 	})
 
-	test("pinned configs sort first in the active provider model column", () => {
+	test("pinned configs remain fixed at top while unpinned configs scroll", () => {
 		// Create a list with many configs to test scrolling
 		const manyConfigs = Array.from({ length: 15 }, (_, i) => ({
 			id: `config${i + 1}`,
 			name: `Config ${i + 1}`,
-			apiProvider: "anthropic",
 			modelId: `model-${i + 1}`,
 		}))
 
@@ -489,28 +461,46 @@ describe("ApiConfigSelector", () => {
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
 
-		const providerColumn = screen.getByTestId("api-provider-column")
-		const modelColumn = screen.getByTestId("api-model-column")
-		expect(providerColumn).toBeInTheDocument()
-		expect(modelColumn).toBeInTheDocument()
+		const popoverContent = screen.getByTestId("popover-content")
+
+		// Should have a single scroll container with max-h-[300px] and overflow-y-auto
+		const scrollContainer = popoverContent.querySelector(".max-h-\\[300px\\].overflow-y-auto")
+		expect(scrollContainer).toBeInTheDocument()
+
+		// Check for pinned configs sticky header
+		const pinnedStickyHeader = scrollContainer?.querySelector(".sticky.top-0.z-10.bg-vscode-dropdown-background")
+		expect(pinnedStickyHeader).toBeInTheDocument()
+		expect(pinnedStickyHeader).toHaveAttribute("aria-label", "Pinned configurations")
 
 		// Check for Config 1, 2, 3 being visible in the sticky header (pinned)
 		expect(screen.getAllByText("Config 1").length).toBeGreaterThan(0)
 		expect(screen.getAllByText("Config 2").length).toBeGreaterThan(0)
 		expect(screen.getAllByText("Config 3").length).toBeGreaterThan(0)
 
-		const configNames = Array.from(modelColumn.querySelectorAll(".group"))
-			.map((row) => row.textContent?.match(/Config \d+/)?.[0])
-			.filter(Boolean)
+		// Verify pinned container contains the pinned configs
+		if (pinnedStickyHeader) {
+			const elements = pinnedStickyHeader.querySelectorAll(".flex-shrink-0")
+			const pinnedConfigTexts = Array.from(elements)
+				.map((el) => (el as Element).textContent)
+				.filter((text) => text?.startsWith("Config"))
 
-		expect(configNames.slice(0, 3)).toEqual(["Config 1", "Config 2", "Config 3"])
+			expect(pinnedConfigTexts).toContain("Config 1")
+			expect(pinnedConfigTexts).toContain("Config 2")
+			expect(pinnedConfigTexts).toContain("Config 3")
+		}
+
+		// Check for unpinned configs section
+		const unpinnedSection = scrollContainer?.querySelector('[aria-label="All configurations"]')
+		expect(unpinnedSection).toBeInTheDocument()
+
+		// Verify separator exists as border on pinned section when unpinned configs exist
+		expect(pinnedStickyHeader).toHaveClass("border-b")
 	})
 
 	test("displays all configs in scrollable container when no configs are pinned", () => {
 		const manyConfigs = Array.from({ length: 10 }, (_, i) => ({
 			id: `config${i + 1}`,
 			name: `Config ${i + 1}`,
-			apiProvider: "anthropic",
 			modelId: `model-${i + 1}`,
 		}))
 
@@ -525,11 +515,26 @@ describe("ApiConfigSelector", () => {
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
 
-		const modelColumn = screen.getByTestId("api-model-column")
-		expect(modelColumn).toBeInTheDocument()
+		const popoverContent = screen.getByTestId("popover-content")
 
-		// All configs should be in the active provider model column.
-		const allConfigRows = modelColumn.querySelectorAll(".group")
+		// Should have a single scroll container with max-h-[300px] and overflow-y-auto
+		const scrollContainer = popoverContent.querySelector(".max-h-\\[300px\\].overflow-y-auto")
+		expect(scrollContainer).toBeInTheDocument()
+
+		// No pinned section should exist when no configs are pinned
+		const pinnedSection = scrollContainer?.querySelector(".sticky.top-0")
+		expect(pinnedSection).not.toBeInTheDocument()
+
+		// Should have unpinned configs section with all configs
+		const unpinnedSection = scrollContainer?.querySelector('[aria-label="All configurations"]')
+		expect(unpinnedSection).toBeInTheDocument()
+
+		// All configs should be in the unpinned section
+		const allConfigRows = unpinnedSection?.querySelectorAll(".group")
 		expect(allConfigRows?.length).toBe(10)
+
+		// No separator should exist when no pinned configs (no sticky header exists)
+		const stickyHeader = scrollContainer?.querySelector(".sticky.top-0")
+		expect(stickyHeader).not.toBeInTheDocument()
 	})
 })

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { Fzf } from "fzf"
 
 import { cn } from "@/lib/utils"
@@ -10,60 +10,6 @@ import { Button } from "@/components/ui"
 
 import { IconButton } from "./IconButton"
 
-type ApiConfigMeta = {
-	id: string
-	name: string
-	apiProvider?: string
-	modelId?: string
-}
-
-type ProviderGroup = {
-	key: string
-	label: string
-	configs: ApiConfigMeta[]
-}
-
-const PROVIDER_LABELS: Record<string, string> = {
-	anthropic: "Anthropic",
-	bedrock: "Amazon Bedrock",
-	deepseek: "DeepSeek",
-	gemini: "Google Gemini",
-	"gemini-cli": "Gemini CLI",
-	vertex: "Vertex AI",
-	openai: "OpenAI Compatible",
-	"openai-native": "OpenAI",
-	"openai-codex": "OpenAI Codex",
-	openrouter: "OpenRouter",
-	ollama: "Ollama",
-	lmstudio: "LM Studio",
-	mistral: "Mistral",
-	moonshot: "Moonshot",
-	minimax: "MiniMax",
-	requesty: "Requesty",
-	unbound: "Unbound",
-	poe: "Poe",
-	xai: "xAI",
-	baseten: "Baseten",
-	litellm: "LiteLLM",
-	sambanova: "SambaNova",
-	zai: "Z.ai",
-	fireworks: "Fireworks AI",
-	"qwen-code": "Qwen Code",
-	roo: "Roo",
-	"vscode-lm": "VS Code LM",
-	"vercel-ai-gateway": "Vercel AI Gateway",
-}
-
-const getProviderKey = (config?: ApiConfigMeta) => config?.apiProvider ?? "unknown"
-
-const getProviderLabel = (apiProvider?: string) => {
-	if (!apiProvider) {
-		return "Other"
-	}
-
-	return PROVIDER_LABELS[apiProvider] ?? apiProvider
-}
-
 interface ApiConfigSelectorProps {
 	value: string
 	displayName: string
@@ -71,7 +17,7 @@ interface ApiConfigSelectorProps {
 	title: string
 	onChange: (value: string) => void
 	triggerClassName?: string
-	listApiConfigMeta: ApiConfigMeta[]
+	listApiConfigMeta: Array<{ id: string; name: string; modelId?: string }>
 	pinnedApiConfigs?: Record<string, boolean>
 	togglePinnedApiConfig: (id: string) => void
 	lockApiConfigAcrossModes: boolean
@@ -94,7 +40,6 @@ export const ApiConfigSelector = ({
 	const { t } = useAppTranslation()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
-	const [activeProviderKey, setActiveProviderKey] = useState<string>("")
 	const portalContainer = useRooPortal("roo-portal")
 
 	// Create searchable items for fuzzy search.
@@ -102,9 +47,7 @@ export const ApiConfigSelector = ({
 		() =>
 			listApiConfigMeta.map((config) => ({
 				original: config,
-				searchStr: [config.name, config.modelId, config.apiProvider, getProviderLabel(config.apiProvider)]
-					.filter(Boolean)
-					.join(" "),
+				searchStr: config.name,
 			})),
 		[listApiConfigMeta],
 	)
@@ -125,69 +68,20 @@ export const ApiConfigSelector = ({
 		return matchingItems
 	}, [listApiConfigMeta, searchValue, fzfInstance])
 
-	const providerGroups = useMemo<ProviderGroup[]>(() => {
-		const groups = new Map<string, ProviderGroup>()
-
-		for (const config of filteredConfigs) {
-			const key = getProviderKey(config)
-
-			if (!groups.has(key)) {
-				groups.set(key, {
-					key,
-					label: getProviderLabel(config.apiProvider),
-					configs: [],
-				})
-			}
-
-			groups.get(key)!.configs.push(config)
-		}
-
-		return Array.from(groups.values()).map((group) => ({
-			...group,
-			configs: [...group.configs].sort((a, b) => {
-				const pinnedDelta = Number(!!pinnedApiConfigs?.[b.id]) - Number(!!pinnedApiConfigs?.[a.id])
-
-				return pinnedDelta
-			}),
-		}))
+	// Separate pinned and unpinned configs.
+	const { pinnedConfigs, unpinnedConfigs } = useMemo(() => {
+		const pinned = filteredConfigs.filter((config) => pinnedApiConfigs?.[config.id])
+		const unpinned = filteredConfigs.filter((config) => !pinnedApiConfigs?.[config.id])
+		return { pinnedConfigs: pinned, unpinnedConfigs: unpinned }
 	}, [filteredConfigs, pinnedApiConfigs])
-
-	const currentConfig = useMemo(
-		() => listApiConfigMeta.find((config) => config.id === value),
-		[listApiConfigMeta, value],
-	)
-
-	const currentProviderKey = getProviderKey(currentConfig)
-	const preferredProviderKey = providerGroups.some((group) => group.key === currentProviderKey)
-		? currentProviderKey
-		: (providerGroups[0]?.key ?? "")
-
-	useEffect(() => {
-		if (!providerGroups.length) {
-			setActiveProviderKey("")
-			return
-		}
-
-		if (!providerGroups.some((group) => group.key === activeProviderKey)) {
-			setActiveProviderKey(preferredProviderKey)
-		}
-	}, [activeProviderKey, preferredProviderKey, providerGroups])
-
-	const activeProviderGroup = providerGroups.find((group) => group.key === activeProviderKey) ?? providerGroups[0]
 
 	const handleSelect = useCallback(
 		(configId: string) => {
-			const selectedConfig = listApiConfigMeta.find((config) => config.id === configId)
-
-			if (selectedConfig) {
-				setActiveProviderKey(getProviderKey(selectedConfig))
-			}
-
 			onChange(configId)
 			setOpen(false)
 			setSearchValue("")
 		},
-		[listApiConfigMeta, onChange],
+		[onChange],
 	)
 
 	const handleEditClick = useCallback(() => {
@@ -195,59 +89,33 @@ export const ApiConfigSelector = ({
 		setOpen(false)
 	}, [])
 
-	const renderProviderItem = useCallback(
-		(group: ProviderGroup) => {
-			const isActive = group.key === activeProviderGroup?.key
-			const currentCount = group.configs.filter((config) => config.id === value).length
-			const pinnedCount = group.configs.filter((config) => pinnedApiConfigs?.[config.id]).length
-
-			return (
-				<button
-					key={group.key}
-					type="button"
-					onClick={() => setActiveProviderKey(group.key)}
-					className={cn(
-						"w-full px-2 py-1.5 text-left text-sm cursor-pointer flex items-center gap-2",
-						"hover:bg-vscode-list-hoverBackground",
-						isActive &&
-							"bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground",
-					)}>
-					<span className="truncate flex-1 min-w-0">{group.label}</span>
-					<div className="flex items-center gap-1 flex-shrink-0">
-						{pinnedCount > 0 && <span className="codicon codicon-pin text-[10px] opacity-60" />}
-						{currentCount > 0 && <span className="codicon codicon-check text-xs" />}
-						<span className="text-[10px] opacity-70">{group.configs.length}</span>
-					</div>
-				</button>
-			)
-		},
-		[activeProviderGroup?.key, pinnedApiConfigs, value],
-	)
-
-	const renderModelItem = useCallback(
-		(config: ApiConfigMeta) => {
+	const renderConfigItem = useCallback(
+		(config: { id: string; name: string; modelId?: string }, isPinned: boolean) => {
 			const isCurrentConfig = config.id === value
-			const isPinned = !!pinnedApiConfigs?.[config.id]
 
 			return (
 				<div
 					key={config.id}
 					onClick={() => handleSelect(config.id)}
 					className={cn(
-						"px-3 py-1.5 text-sm cursor-pointer flex items-center group gap-2",
+						"px-3 py-1.5 text-sm cursor-pointer flex items-center group",
 						"hover:bg-vscode-list-hoverBackground",
 						isCurrentConfig &&
 							"bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground",
 					)}>
-					<div className="flex-1 min-w-0 flex flex-col overflow-hidden leading-tight">
-						<span className="truncate">{config.modelId || config.name}</span>
+					<div className="flex-1 min-w-0 flex items-center gap-1 overflow-hidden">
+						<span className="flex-shrink-0">{config.name}</span>
 						{config.modelId && (
-							<span className="text-xs text-vscode-descriptionForeground opacity-80 truncate">
-								{config.name}
-							</span>
+							<>
+								<span
+									className="text-vscode-descriptionForeground opacity-70 min-w-0 overflow-hidden"
+									style={{ direction: "rtl", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+									{config.modelId}
+								</span>
+							</>
 						)}
 					</div>
-					<div className="flex items-center gap-1 flex-shrink-0">
+					<div className="flex items-center gap-1">
 						{isCurrentConfig && (
 							<div className="size-5 p-1 flex items-center justify-center">
 								<span className="codicon codicon-check text-xs" />
@@ -274,7 +142,7 @@ export const ApiConfigSelector = ({
 				</div>
 			)
 		},
-		[value, pinnedApiConfigs, handleSelect, t, togglePinnedApiConfig],
+		[value, handleSelect, t, togglePinnedApiConfig],
 	)
 
 	return (
@@ -299,7 +167,7 @@ export const ApiConfigSelector = ({
 				align="start"
 				sideOffset={4}
 				container={portalContainer}
-				className="p-0 overflow-hidden w-[520px] max-w-[calc(100vw-24px)]">
+				className="p-0 overflow-hidden w-[300px]">
 				<div className="flex flex-col w-full">
 					{/* Search input or info blurb */}
 					{listApiConfigMeta.length > 6 ? (
@@ -329,29 +197,29 @@ export const ApiConfigSelector = ({
 						</div>
 					)}
 
-					{/* Provider/model picker */}
+					{/* Config list - single scroll container */}
 					{filteredConfigs.length === 0 && searchValue ? (
 						<div className="py-2 px-3 text-sm text-vscode-foreground/70">{t("common:ui.no_results")}</div>
 					) : (
-						<div className="grid grid-cols-[170px_minmax(0,1fr)] max-h-[320px] overflow-hidden">
-							<div
-								className="border-r border-vscode-dropdown-border overflow-y-auto"
-								data-testid="api-provider-column"
-								aria-label={t("settings:providers.apiProvider")}>
-								<div className="sticky top-0 z-10 bg-vscode-dropdown-background px-2 py-1 text-[10px] uppercase tracking-wide text-vscode-descriptionForeground border-b border-vscode-dropdown-border">
-									{t("settings:providers.apiProvider")}
+						<div className="max-h-[300px] overflow-y-auto">
+							{/* Pinned configs - sticky header */}
+							{pinnedConfigs.length > 0 && (
+								<div
+									className={cn(
+										"sticky top-0 z-10 bg-vscode-dropdown-background py-1",
+										unpinnedConfigs.length > 0 && "border-b border-vscode-dropdown-foreground/10",
+									)}
+									aria-label="Pinned configurations">
+									{pinnedConfigs.map((config) => renderConfigItem(config, true))}
 								</div>
-								<div className="py-1">{providerGroups.map(renderProviderItem)}</div>
-							</div>
-							<div
-								className="overflow-y-auto"
-								data-testid="api-model-column"
-								aria-label={t("settings:providers.model")}>
-								<div className="sticky top-0 z-10 bg-vscode-dropdown-background px-3 py-1 text-[10px] uppercase tracking-wide text-vscode-descriptionForeground border-b border-vscode-dropdown-border">
-									{activeProviderGroup?.label ?? t("settings:providers.model")}
+							)}
+
+							{/* Unpinned configs */}
+							{unpinnedConfigs.length > 0 && (
+								<div className="py-1" aria-label="All configurations">
+									{unpinnedConfigs.map((config) => renderConfigItem(config, false))}
 								</div>
-								<div className="py-1">{activeProviderGroup?.configs.map(renderModelItem)}</div>
-							</div>
+							)}
 						</div>
 					)}
 
