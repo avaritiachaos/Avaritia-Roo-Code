@@ -72,6 +72,7 @@ describe("ChatTextArea", () => {
 			},
 			taskHistory: [],
 			cwd: "/test/workspace",
+			setApiConfiguration: vi.fn(),
 		})
 	})
 
@@ -98,8 +99,10 @@ describe("ChatTextArea", () => {
 					apiProvider: "deepseek",
 				},
 				currentModelId: "deepseek-v4-pro",
+				currentApiConfigName: "DeepSeek",
 				taskHistory: [],
 				cwd: "/test/workspace",
+				setApiConfiguration: vi.fn(),
 			})
 
 			render(<ChatTextArea {...defaultProps} />)
@@ -107,6 +110,41 @@ describe("ChatTextArea", () => {
 			const indicator = screen.getByTestId("current-model-indicator")
 			expect(indicator).toHaveTextContent("DeepSeek V4 Pro")
 			expect(indicator).toHaveAttribute("title", "deepseek-v4-pro")
+		})
+
+		it("switches the current provider model from the footer picker", async () => {
+			const setApiConfiguration = vi.fn()
+			const apiConfiguration = {
+				apiProvider: "deepseek",
+				apiModelId: "deepseek-chat",
+			}
+
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration,
+				currentModelId: "deepseek-chat",
+				currentApiConfigName: "DeepSeek",
+				taskHistory: [],
+				cwd: "/test/workspace",
+				setApiConfiguration,
+			})
+
+			render(<ChatTextArea {...defaultProps} />)
+
+			fireEvent.click(screen.getByTestId("current-model-indicator"))
+			fireEvent.click(await screen.findByTestId("quick-model-option-deepseek-reasoner"))
+
+			const updatedConfiguration = {
+				apiProvider: "deepseek",
+				apiModelId: "deepseek-reasoner",
+			}
+			expect(setApiConfiguration).toHaveBeenCalledWith(updatedConfiguration)
+			expect(mockPostMessage).toHaveBeenCalledWith({
+				type: "upsertApiConfiguration",
+				text: "DeepSeek",
+				apiConfiguration: updatedConfiguration,
+			})
 		})
 	})
 
