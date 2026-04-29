@@ -30,7 +30,8 @@ vi.mock("openai", () => {
 						}
 
 						// Check if this is a reasoning_content test by looking at model
-						const isReasonerModel = options.model?.includes("deepseek-reasoner")
+						const isReasonerModel =
+							options.model?.includes("deepseek-reasoner") || options.model?.includes("deepseek-v4")
 						const isToolCallTest = options.tools?.length > 0
 
 						// Return async iterator for streaming
@@ -122,7 +123,7 @@ vi.mock("openai", () => {
 import OpenAI from "openai"
 import type { Anthropic } from "@anthropic-ai/sdk"
 
-import { deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
+import { deepSeekDefaultModelId, deepSeekModels, DEEP_SEEK_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
 
@@ -224,6 +225,28 @@ describe("DeepSeekHandler", () => {
 			expect(model.info.contextWindow).toBe(128_000)
 			expect(model.info.supportsImages).toBe(false)
 			expect(model.info.supportsPromptCache).toBe(true)
+		})
+
+		it.each([
+			["deepseek-v4-flash", deepSeekModels["deepseek-v4-flash"]],
+			["deepseek-v4-pro", deepSeekModels["deepseek-v4-pro"]],
+		])("should return correct model info for %s", (modelId, expectedInfo) => {
+			const handlerWithV4 = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: modelId,
+			})
+
+			const model = handlerWithV4.getModel()
+			const info = model.info as ModelInfo
+
+			expect(model.id).toBe(modelId)
+			expect(info.maxTokens).toBe(384_000)
+			expect(info.contextWindow).toBe(1_000_000)
+			expect(info.supportsPromptCache).toBe(true)
+			expect(info.preserveReasoning).toBe(true)
+			expect(info.supportsReasoningEffort).toEqual(["disable", "high", "xhigh"])
+			expect(info.reasoningEffort).toBe("high")
+			expect(model.info).toBe(expectedInfo)
 		})
 
 		it("should have preserveReasoning enabled for deepseek-reasoner to support interleaved thinking", () => {
@@ -473,6 +496,60 @@ describe("DeepSeekHandler", () => {
 			// Verify that the thinking parameter was NOT passed to the API
 			const callArgs = mockCreate.mock.calls[0][0]
 			expect(callArgs.thinking).toBeUndefined()
+		})
+
+		it("should pass reasoning parameters for DeepSeek V4 models", async () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-flash",
+				enableReasoningEffort: true,
+				reasoningEffort: "high",
+			})
+
+			const stream = v4Handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.thinking).toEqual({ type: "enabled" })
+			expect(callArgs.reasoning_effort).toBe("high")
+		})
+
+		it("should map xhigh reasoning effort to DeepSeek max", async () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+				enableReasoningEffort: true,
+				reasoningEffort: "xhigh",
+			})
+
+			const stream = v4Handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.thinking).toEqual({ type: "enabled" })
+			expect(callArgs.reasoning_effort).toBe("max")
+		})
+
+		it("should disable thinking for DeepSeek V4 when reasoning effort is disabled", async () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-flash",
+				enableReasoningEffort: true,
+				reasoningEffort: "disable",
+			})
+
+			const stream = v4Handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.thinking).toEqual({ type: "disabled" })
+			expect(callArgs.reasoning_effort).toBeUndefined()
 		})
 
 		it("should handle tool calls with reasoning_content", async () => {
