@@ -166,7 +166,6 @@ vi.mock("../activate", () => ({
 	registerCommands: vi.fn(),
 	registerCodeActions: vi.fn(),
 	registerTerminalActions: vi.fn(),
-	initializeProviderModelStatusBar: vi.fn(),
 	CodeActionProvider: vi.fn().mockImplementation(() => ({
 		providedCodeActionKinds: [],
 	})),
