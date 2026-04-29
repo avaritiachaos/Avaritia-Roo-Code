@@ -89,6 +89,27 @@ describe("ChatTextArea", () => {
 		})
 	})
 
+	describe("current model indicator", () => {
+		it("shows the model id from extension state in the footer", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "deepseek",
+				},
+				currentModelId: "deepseek-v4-pro",
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} />)
+
+			const indicator = screen.getByTestId("current-model-indicator")
+			expect(indicator).toHaveTextContent("DeepSeek V4 Pro")
+			expect(indicator).toHaveAttribute("title", "deepseek-v4-pro")
+		})
+	})
+
 	describe("handleEnhancePrompt", () => {
 		it("should send message with correct configuration when clicked", () => {
 			const apiConfiguration = {

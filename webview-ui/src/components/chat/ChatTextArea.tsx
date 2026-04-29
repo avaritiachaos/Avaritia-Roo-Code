@@ -99,6 +99,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			cloudUserInfo,
 			enterBehavior,
 			lockApiConfigAcrossModes,
+			currentModelId,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -109,6 +110,28 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				displayName: currentApiConfigName || "", // Use the name directly for display.
 			}
 		}, [listApiConfigMeta, currentApiConfigName])
+
+		const currentModelDisplayName = useMemo(() => {
+			if (!currentModelId) {
+				return undefined
+			}
+
+			return currentModelId
+				.split(/[-_\s]+/)
+				.filter(Boolean)
+				.map((part) => {
+					if (part.toLowerCase() === "deepseek") {
+						return "DeepSeek"
+					}
+
+					if (/^v\d+$/i.test(part)) {
+						return part.toUpperCase()
+					}
+
+					return part.charAt(0).toUpperCase() + part.slice(1)
+				})
+				.join(" ")
+		}, [currentModelId])
 
 		const [gitCommits, setGitCommits] = useState<any[]>([])
 		const [showDropdown, setShowDropdown] = useState(false)
@@ -1320,6 +1343,14 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							lockApiConfigAcrossModes={!!lockApiConfigAcrossModes}
 							onToggleLockApiConfig={handleToggleLockApiConfig}
 						/>
+						{currentModelDisplayName ? (
+							<div
+								className="flex h-5 max-w-[160px] min-w-0 flex-shrink items-center rounded-sm border border-vscode-input-border/60 px-1.5 text-vscode-descriptionForeground"
+								title={currentModelId}
+								data-testid="current-model-indicator">
+								<span className="truncate text-xs leading-none">{currentModelDisplayName}</span>
+							</div>
+						) : null}
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>
 					<div
