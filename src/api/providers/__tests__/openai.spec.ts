@@ -391,6 +391,78 @@ describe("OpenAiHandler", () => {
 			expect(callArgs.reasoning_effort).toBeUndefined()
 		})
 
+		it("should include DeepSeek V4 thinking and high reasoning effort for OpenAI-compatible endpoints", async () => {
+			const deepSeekV4Options: ApiHandlerOptions = {
+				...mockOptions,
+				openAiBaseUrl: "https://api.deepseek.com",
+				openAiModelId: "deepseek-v4-flash",
+				enableReasoningEffort: true,
+				reasoningEffort: "high",
+				openAiCustomModelInfo: {
+					contextWindow: 1_000_000,
+					supportsPromptCache: true,
+					supportsReasoningEffort: ["disable", "high", "xhigh"],
+					reasoningEffort: "high",
+				},
+			}
+			const deepSeekV4Handler = new OpenAiHandler(deepSeekV4Options)
+			const stream = deepSeekV4Handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.thinking).toEqual({ type: "enabled" })
+			expect(callArgs.reasoning_effort).toBe("high")
+		})
+
+		it("should map DeepSeek V4 xhigh reasoning effort to max for OpenAI-compatible endpoints", async () => {
+			const deepSeekV4Options: ApiHandlerOptions = {
+				...mockOptions,
+				openAiBaseUrl: "https://api.deepseek.com",
+				openAiModelId: "deepseek-v4-pro",
+				enableReasoningEffort: true,
+				reasoningEffort: "xhigh",
+				openAiCustomModelInfo: {
+					contextWindow: 1_000_000,
+					supportsPromptCache: true,
+					supportsReasoningEffort: ["disable", "high", "xhigh"],
+					reasoningEffort: "high",
+				},
+			}
+			const deepSeekV4Handler = new OpenAiHandler(deepSeekV4Options)
+			const stream = deepSeekV4Handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.thinking).toEqual({ type: "enabled" })
+			expect(callArgs.reasoning_effort).toBe("max")
+		})
+
+		it("should disable DeepSeek V4 thinking for OpenAI-compatible endpoints", async () => {
+			const deepSeekV4Options: ApiHandlerOptions = {
+				...mockOptions,
+				openAiBaseUrl: "https://api.deepseek.com",
+				openAiModelId: "deepseek-v4-flash",
+				enableReasoningEffort: true,
+				reasoningEffort: "disable",
+				openAiCustomModelInfo: {
+					contextWindow: 1_000_000,
+					supportsPromptCache: true,
+					supportsReasoningEffort: ["disable", "high", "xhigh"],
+					reasoningEffort: "high",
+				},
+			}
+			const deepSeekV4Handler = new OpenAiHandler(deepSeekV4Options)
+			const stream = deepSeekV4Handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.thinking).toEqual({ type: "disabled" })
+			expect(callArgs.reasoning_effort).toBeUndefined()
+		})
+
 		it("should include max_tokens when includeMaxTokens is true", async () => {
 			const optionsWithMaxTokens: ApiHandlerOptions = {
 				...mockOptions,
