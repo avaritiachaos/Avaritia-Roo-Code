@@ -463,6 +463,57 @@ describe("OpenAiHandler", () => {
 			expect(callArgs.reasoning_effort).toBeUndefined()
 		})
 
+		it("should preserve empty DeepSeek V4 reasoning_content chunks for OpenAI-compatible endpoints", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: { reasoning_content: "" },
+								index: 0,
+							},
+						],
+						usage: null,
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								index: 0,
+								finish_reason: "stop",
+							},
+						],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+							total_tokens: 15,
+						},
+					}
+				},
+			}))
+
+			const deepSeekV4Handler = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: "https://api.deepseek.com",
+				openAiModelId: "deepseek-v4-flash",
+				openAiCustomModelInfo: {
+					contextWindow: 1_000_000,
+					supportsPromptCache: true,
+					preserveReasoning: true,
+				},
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of deepSeekV4Handler.createMessage(systemPrompt, messages)) {
+				chunks.push(chunk)
+			}
+
+			expect(chunks.filter((chunk) => chunk.type === "reasoning")).toContainEqual({
+				type: "reasoning",
+				text: "",
+			})
+		})
+
 		it("should include max_tokens when includeMaxTokens is true", async () => {
 			const optionsWithMaxTokens: ApiHandlerOptions = {
 				...mockOptions,
