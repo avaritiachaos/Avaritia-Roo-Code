@@ -125,10 +125,10 @@ export class DeepSeekHandler extends OpenAiHandler {
 
 			// Handle reasoning_content from DeepSeek's interleaved thinking
 			// This is the proper way DeepSeek sends thinking content in streaming
-			if ("reasoning_content" in delta && delta.reasoning_content) {
+			if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
 				yield {
 					type: "reasoning",
-					text: (delta.reasoning_content as string) || "",
+					text: delta.reasoning_content,
 				}
 			}
 

@@ -231,10 +231,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				if ("reasoning_content" in delta && delta.reasoning_content) {
+				if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
 					yield {
 						type: "reasoning",
-						text: (delta.reasoning_content as string | undefined) || "",
+						text: delta.reasoning_content,
 					}
 				}
 

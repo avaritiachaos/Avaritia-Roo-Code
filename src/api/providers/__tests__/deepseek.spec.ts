@@ -439,6 +439,51 @@ describe("DeepSeekHandler", () => {
 			expect(reasoningChunks[1].text).toBe(" I'll analyze step by step.")
 		})
 
+		it("should preserve empty reasoning_content chunks for DeepSeek V4", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: { reasoning_content: "" },
+								index: 0,
+							},
+						],
+						usage: null,
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								index: 0,
+								finish_reason: "stop",
+							},
+						],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+							total_tokens: 15,
+						},
+					}
+				},
+			}))
+
+			const reasonerHandler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of reasonerHandler.createMessage(systemPrompt, messages)) {
+				chunks.push(chunk)
+			}
+
+			expect(chunks.filter((chunk) => chunk.type === "reasoning")).toContainEqual({
+				type: "reasoning",
+				text: "",
+			})
+		})
+
 		it("should pass thinking parameter for DeepSeek V4 models", async () => {
 			const reasonerHandler = new DeepSeekHandler({
 				...mockOptions,
