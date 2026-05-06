@@ -559,6 +559,49 @@ describe("DeepSeekHandler", () => {
 			expect(callArgs.reasoning_effort).toBeUndefined()
 		})
 
+		it("should add empty reasoning_content to old tool calls when thinking is re-enabled", async () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+				enableReasoningEffort: true,
+				reasoningEffort: "high",
+			})
+
+			const priorMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_without_reasoning",
+							name: "read_file",
+							input: { path: "memory.md" },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_without_reasoning",
+							content: "ok",
+						},
+					],
+				},
+			]
+
+			const stream = v4Handler.createMessage(systemPrompt, priorMessages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			const assistantWithToolCall = callArgs.messages.find((message: any) => message.role === "assistant")
+			expect(callArgs.thinking).toEqual({ type: "enabled" })
+			expect(assistantWithToolCall.reasoning_content).toBe("")
+		})
+
 		it("should handle tool calls with reasoning_content", async () => {
 			const reasonerHandler = new DeepSeekHandler({
 				...mockOptions,
