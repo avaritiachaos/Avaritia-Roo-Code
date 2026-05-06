@@ -136,7 +136,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			let convertedMessages
 
 			if (deepseekReasoner) {
-				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
+					mergeToolResultText: usesDeepSeekThinkingParam && deepseekThinkingType === "enabled",
+					requireReasoningContentForToolCalls:
+						usesDeepSeekThinkingParam && deepseekThinkingType === "enabled",
+				})
 			} else {
 				if (modelInfo.supportsPromptCache) {
 					systemMessage = {
@@ -256,7 +260,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			const requestOptions: OpenAiCompatibleChatCompletionParamsNonStreaming = {
 				model: modelId,
 				messages: deepseekReasoner
-					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
+							mergeToolResultText: usesDeepSeekThinkingParam && deepseekThinkingType === "enabled",
+							requireReasoningContentForToolCalls:
+								usesDeepSeekThinkingParam && deepseekThinkingType === "enabled",
+						})
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
 				...(usesDeepSeekThinkingParam && { thinking: { type: deepseekThinkingType } }),
 				...(providerReasoning && providerReasoning),

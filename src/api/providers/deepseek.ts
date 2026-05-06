@@ -74,6 +74,7 @@ export class DeepSeekHandler extends OpenAiHandler {
 		// See: https://api-docs.deepseek.com/guides/thinking_mode
 		const convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
 			mergeToolResultText: isThinkingModel,
+			requireReasoningContentForToolCalls: isThinkingModel && thinkingType === "enabled",
 		})
 
 		const requestOptions: DeepSeekChatCompletionParams = {
