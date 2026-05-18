@@ -19,6 +19,9 @@ Download the `.vsix` from
 [GitHub Releases](https://github.com/avaritiachaos/Avaritia-Roo-Code/releases),
 then run `Extensions: Install from VSIX...` in VS Code and restart the editor.
 
+Install/support thread:
+[DeepSeek V4 support standalone build](https://github.com/avaritiachaos/Avaritia-Roo-Code/issues/1).
+
 ## Included changes
 
 - DeepSeek V4 Flash and Pro model definitions.
