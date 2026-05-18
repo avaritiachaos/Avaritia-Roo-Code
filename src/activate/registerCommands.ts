@@ -148,6 +148,22 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			outputChannel.appendLine(`Error focusing panel: ${error}`)
 		}
 	},
+	toggleSidebar: async () => {
+		try {
+			if (sidebarPanel?.visible) {
+				await vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar")
+				return
+			}
+
+			await focusPanel(tabPanel, sidebarPanel)
+
+			if (sidebarPanel && getPanel() === sidebarPanel) {
+				provider.postMessageToWebview({ type: "action", action: "focusInput" })
+			}
+		} catch (error) {
+			outputChannel.appendLine(`Error toggling sidebar: ${error}`)
+		}
+	},
 	acceptInput: () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
 

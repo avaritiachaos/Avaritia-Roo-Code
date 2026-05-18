@@ -156,6 +156,11 @@
 				"category": "%configuration.title%"
 			},
 			{
+				"command": "roo-cline.toggleSidebar",
+				"title": "Toggle Roo Code Sidebar",
+				"category": "%configuration.title%"
+			},
+			{
 				"command": "roo-cline.toggleAutoApprove",
 				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
@@ -249,7 +254,7 @@
 		},
 		"keybindings": [
 			{
-				"command": "workbench.view.extension.roo-cline-ActivityBar",
+				"command": "roo-cline.toggleSidebar",
 				"key": "shift+f8",
 				"win": "shift+f8",
 				"linux": "shift+f8"
