@@ -1927,6 +1927,7 @@ export class ClineProvider
 
 		const {
 			apiConfiguration,
+			currentModelId,
 			lastShownAnnouncementId,
 			customInstructions,
 			alwaysAllowReadOnly,
@@ -2009,6 +2010,7 @@ export class ClineProvider
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
+			currentModelId,
 			customInstructions,
 			alwaysAllowReadOnly: alwaysAllowReadOnly ?? false,
 			alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? false,
@@ -2149,11 +2151,13 @@ export class ClineProvider
 			providerSettings.openRouterModelId = openRouterDefaultModelId
 		}
 
+		const currentModelId = getModelId(providerSettings)
 		const organizationAllowList = ORGANIZATION_ALLOW_ALL
 
 		// Return the same structure as before.
 		return {
 			apiConfiguration: providerSettings,
+			currentModelId,
 			lastShownAnnouncementId: stateValues.lastShownAnnouncementId,
 			customInstructions: stateValues.customInstructions,
 			apiModelId: stateValues.apiModelId,

@@ -293,6 +293,7 @@ export type ExtensionState = Pick<
 	currentTaskItem?: HistoryItem
 	currentTaskTodos?: TodoItem[] // Initial todos for the current task
 	apiConfiguration: ProviderSettings
+	currentModelId?: string
 	uriScheme?: string
 	shouldShowAnnouncement: boolean
 
