@@ -249,6 +249,12 @@
 		},
 		"keybindings": [
 			{
+				"command": "workbench.view.extension.roo-cline-ActivityBar",
+				"key": "shift+f8",
+				"win": "shift+f8",
+				"linux": "shift+f8"
+			},
+			{
 				"command": "roo-cline.addToContext",
 				"key": "cmd+k cmd+a",
 				"mac": "cmd+k cmd+a",

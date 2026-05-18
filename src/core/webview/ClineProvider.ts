@@ -2037,7 +2037,7 @@ export class ClineProvider
 			ttsSpeed: ttsSpeed ?? 1.0,
 			enableCheckpoints: enableCheckpoints ?? true,
 			checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
-			shouldShowAnnouncement: lastShownAnnouncementId !== this.latestAnnouncementId,
+			shouldShowAnnouncement: false,
 			allowedCommands: mergedAllowedCommands,
 			deniedCommands: mergedDeniedCommands,
 			soundVolume: soundVolume ?? 0.5,
