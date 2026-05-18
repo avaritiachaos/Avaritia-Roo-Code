@@ -1,3 +1,35 @@
+# Avaritia Roo Code
+
+A standalone Roo Code build maintained by
+[@avaritiachaos](https://github.com/avaritiachaos).
+
+This fork uses its own VS Code extension identity:
+
+```text
+avaritiachaos.avaritia-roo-code
+```
+
+It can be installed alongside the official `RooVeterinaryInc.roo-cline`
+extension and will not be overwritten by Marketplace updates for the official
+extension.
+
+## Install
+
+Download the `.vsix` from
+[GitHub Releases](https://github.com/avaritiachaos/Avaritia-Roo-Code/releases),
+then run `Extensions: Install from VSIX...` in VS Code and restart the editor.
+
+## Included changes
+
+- DeepSeek V4 Flash and Pro model definitions.
+- DeepSeek thinking mode controls and `reasoning_effort` mapping.
+- Fixes for empty DeepSeek reasoning chunks and thinking mode history replay.
+- A chat footer model selector for switching models under the current provider.
+
+---
+
+## Upstream Roo Code README
+
 <p align="center">
   <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>  
 </p>
