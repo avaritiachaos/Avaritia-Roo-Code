@@ -1,53 +1,86 @@
 ---
 sidebar_label: Welcome
-description: Learn how to use Roo Code, the autonomous AI coding agent that helps you code faster and smarter in VS Code. Complete guides, tutorials, and documentation.
+title: Avaritia Roo Code
+hide_title: true
+hide_table_of_contents: true
+pagination_next: null
+pagination_prev: null
+custom_edit_url: null
+description: Avaritia Roo Code documentation, install notes, provider setup, and maintenance guidance for the Avaritia build of Roo Code.
 keywords:
-  - Roo Code
+  - Avaritia Roo Code
+  - Roo Code fork
   - AI coding assistant
   - VS Code extension
   - autonomous coding agent
-  - AI pair programmer
-  - code generation
   - documentation
 ---
 
-# Roo Code Docs
+<section className="avaritia-hero">
+	<div className="avaritia-hero__copy">
+		<p className="avaritia-eyebrow">Avaritia build documentation</p>
+		<h1>Avaritia Roo Code</h1>
+		<div className="avaritia-hero__lead">
+			A maintained personal build of Roo Code for VS Code, packaged with Avaritia branding and documented for local
+			installation, provider setup, and day-to-day maintenance.
+		</div>
+		<div className="avaritia-actions">
+			<a className="avaritia-button avaritia-button--primary" href="/Avaritia-Roo-Code/getting-started/installing">
+				Start setup
+			</a>
+			<a className="avaritia-button" href="https://github.com/avaritiachaos/Avaritia-Roo-Code">
+				View source
+			</a>
+		</div>
+	</div>
+	<div className="avaritia-hero__visual" aria-label="Avaritia Roo Code interface preview">
+		<img src="/Avaritia-Roo-Code/img/right-column-roo.gif" alt="Roo Code extension interface preview" />
+	</div>
+</section>
 
-:::warning Extension Shutdown
-The Roo Code Extension was shut down on May 15th.
-- If you're looking for an alternative, check out [ZooCode](https://github.com/Zoo-Code-Org/Zoo-Code/) (a fork started by the Roo Code community) and [Cline](https://cline.bot/) (from where Roo Code originated).
-- If you were a paying user and have billing questions, please write [billing@roocode.com](mailto:billing@roocode.com).
-:::
+<section className="avaritia-section">
+	<div className="avaritia-section__header">
+		<p className="avaritia-eyebrow">Use the docs by task</p>
+		<h2>Find the next thing you need</h2>
+	</div>
+	<div className="avaritia-grid">
+		<a className="avaritia-card" href="/Avaritia-Roo-Code/getting-started/installing">
+			<span className="avaritia-card__label">Install</span>
+			<h3>Set up the extension</h3>
+			<div className="avaritia-card__text">Install the VSIX, reload VS Code, and confirm the Avaritia build is the active extension.</div>
+		</a>
+		<a className="avaritia-card" href="/Avaritia-Roo-Code/getting-started/connecting-api-provider">
+			<span className="avaritia-card__label">Providers</span>
+			<h3>Connect a model</h3>
+			<div className="avaritia-card__text">Configure Anthropic, OpenAI-compatible providers, local models, or other supported backends.</div>
+		</a>
+		<a className="avaritia-card" href="/Avaritia-Roo-Code/basic-usage/the-chat-interface">
+			<span className="avaritia-card__label">Workflow</span>
+			<h3>Use the sidebar</h3>
+			<div className="avaritia-card__text">Understand the chat interface, approvals, context mentions, modes, and task history.</div>
+		</a>
+		<a className="avaritia-card" href="/Avaritia-Roo-Code/features/mcp/overview">
+			<span className="avaritia-card__label">Integrations</span>
+			<h3>Add MCP tools</h3>
+			<div className="avaritia-card__text">Extend the agent with external servers, tool resources, and project-specific automation.</div>
+		</a>
+	</div>
+</section>
 
-Roo Code is an open-source AI coding agent for VS Code designed to take full advantage of advanced large-language models and change how you create software at a fundamental level. It's powerful, customizable, and model-agnostic, with actual file system access, terminal control, and multi-step workflows.
-
-Roo's approach is to trade tokens for quality. If you want the best and most effective AI coding experience available, this is it.
-
-The Roo Code VS Code extension works locally in your IDE and gives you full control over your coding experience. It's great for deep or highly iterative development work, and it fits into your existing workflow.
-
-## What can Roo Code do for you
-
-- Generate Code from natural language descriptions and specs
-- Refactor & debug existing code
-- Write & update documentation
-- Answer questions about your codebase
-- Automate repetitive tasks
-- Utilize MCP Servers
-
-## A mindset for success
-
-The most successful Roo users tend to embrace the following ideas:
-
-- **Leverage model agnosticism:** Roo isn't an LLM model, it needs an [LLM provider](/providers) to work. But it's compatible with dozens of providers and hundreds of models, so you're free to experiment, optimize and switch around, by design. No lock-ins in a world where "the best model" changes every other week.
-- **Don't skimp on tokens:** expensive state-of-the-art models with lots of tokens will almost always beat cheap models using few tokens. Pay attention to your budget, but embrace the fact that tokens are cheaper than developer time.
-- **Trust roles:** The extension's customizable Modes (Architect, Code, etc) keep the models on track and focused on the task at hand, without stepping outside of their boundaries. Lean on them depending on the task you're working on.
-- **Be ambitious:** Roo works best the more you trust it. Out-of-the-box, the extension will ask for your permission to do everything, but as you become more comfortable and enable [Auto-Approve](/features/auto-approving-actions), you'll see it work for long periods on its own without getting stuck or making bad decisions. Once ready, throw large, complex projects at the [Orchestrator](/basic-usage/using-modes#orchestrator-mode-aka-boomerang-mode), who will coordinate tasks across Modes.
-
-## Getting Started
-
-- [Install the Extension](/getting-started/installing)
-- [Connect an LLM Provider](/getting-started/connecting-api-provider)
-
-## Additional Resources
-
-- [GitHub Issues](https://github.com/RooCodeInc/Roo-Code/issues): Report bugs and track development.
+<section className="avaritia-section avaritia-section--split">
+	<div>
+		<p className="avaritia-eyebrow">Maintenance boundary</p>
+		<h2>Source first, installed extension second</h2>
+		<div className="avaritia-section__text">
+			Make durable changes in <code>D:\AI_alice\Avaritia-Roo-Code</code>. The VS Code extensions folder is only the
+			installed runtime output and can be replaced by reinstalling or upgrading the extension.
+		</div>
+	</div>
+	<div className="avaritia-note">
+		<strong>Current project rule</strong>
+		<div className="avaritia-note__text">
+			Build, test, document, and commit from the source repository. Inspect the installed extension directory only when
+			you need to verify what VS Code is actually loading.
+		</div>
+	</div>
+</section>

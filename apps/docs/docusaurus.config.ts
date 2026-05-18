@@ -15,19 +15,19 @@ import {
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-	title: "Roo Code Documentation",
-	tagline: "AI-powered autonomous coding agent for VS Code - Complete documentation, guides, and tutorials",
+	title: "Avaritia Roo Code Documentation",
+	tagline: "A maintained Avaritia build of Roo Code for VS Code",
 	favicon: "img/favicon.ico",
 
 	// Set the production url of your site here
-	url: "https://roocodeinc.github.io",
+	url: "https://avaritiachaos.github.io",
 	// Set the /<baseUrl>/ pathname under which your site is served
 	// For GitHub pages deployment, it is often '/<projectName>/'
-	baseUrl: "/Roo-Code/",
+	baseUrl: "/Avaritia-Roo-Code/",
 
 	// GitHub pages deployment config (if needed)
-	organizationName: "RooCodeInc",
-	projectName: "Roo-Code",
+	organizationName: "avaritiachaos",
+	projectName: "Avaritia-Roo-Code",
 
 	onBrokenLinks: "warn",
 	markdown: {
@@ -354,7 +354,7 @@ const config: Config = {
 			{
 				name: "keywords",
 				content:
-					"Roo Code, AI coding assistant, VS Code extension, autonomous coding agent, AI pair programmer, code generation, documentation",
+					"Avaritia Roo Code, Roo Code fork, AI coding assistant, VS Code extension, autonomous coding agent, documentation",
 			},
 			{ name: "twitter:card", content: "summary_large_image" },
 			{ name: "twitter:site", content: "@roocode" },
@@ -370,7 +370,7 @@ const config: Config = {
 		image: "/img/social-share.png", // Default Open Graph image
 		navbar: {
 			logo: {
-				alt: "Roo Code Logo",
+				alt: "Avaritia Roo Code Logo",
 				src: "img/roo-code-logo-dark.svg",
 				srcDark: "img/roo-code-logo-white.svg",
 			},
@@ -384,7 +384,7 @@ const config: Config = {
 		footer: {
 			style: "dark",
 			logo: {
-				alt: "Roo Code Logo",
+				alt: "Avaritia Roo Code Logo",
 				src: "img/roo-code-logo-dark.svg",
 				srcDark: "img/roo-code-logo-white.svg",
 				width: 120,

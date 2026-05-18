@@ -14,7 +14,7 @@ export default function FooterLayout({ style, links, logo, copyright }: Props): 
 				<div className="footer__main">
 					<div className="footer__brand">
 						{logo && <div className="footer__logo-container">{logo}</div>}
-						<div className="footer__tagline">Open-source AI coding assistance for VS Code.</div>
+						<div className="footer__tagline">Avaritia build documentation for Roo Code on VS Code.</div>
 						<div className="footer__social-icons">
 							<SocialIcons />
 						</div>
