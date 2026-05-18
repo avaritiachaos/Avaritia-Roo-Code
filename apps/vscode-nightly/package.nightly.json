@@ -1,6 +1,16 @@
 {
-	"name": "roo-code-nightly",
-	"version": "0.0.1",
+	"name": "avaritia-roo-code",
+	"displayName": "Avaritia Roo Code",
+	"publisher": "avaritiachaos",
+	"version": "3.53.0-avaritia.1",
 	"icon": "assets/icons/icon-nightly.png",
+	"author": {
+		"name": "avaritiachaos"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/avaritiachaos/Roo-Code"
+	},
+	"homepage": "https://github.com/avaritiachaos/Roo-Code",
 	"scripts": {}
 }

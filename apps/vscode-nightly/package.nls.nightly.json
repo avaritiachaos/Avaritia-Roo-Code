@@ -1,7 +1,8 @@
 {
-	"extension.displayName": "Roo Code Nightly",
-	"views.contextMenu.label": "Roo Code Nightly",
-	"views.terminalMenu.label": "Roo Code Nightly",
-	"views.activitybar.title": "Roo Code Nightly",
-	"configuration.title": "Roo Code Nightly"
+	"extension.displayName": "Avaritia Roo Code",
+	"views.contextMenu.label": "Avaritia Roo Code",
+	"views.terminalMenu.label": "Avaritia Roo Code",
+	"views.activitybar.title": "Avaritia Roo Code",
+	"views.sidebar.name": "Avaritia Roo Code",
+	"configuration.title": "Avaritia Roo Code"
 }
